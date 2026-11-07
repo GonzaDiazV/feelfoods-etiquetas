@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Etiquetas Feel Foods</title>
+<style>
+  :root {
+    --green: #054523; --green-2: #0b5a31; --mint: #54bb70; --orange: #f9a12d;
+    --bg: #f3f5f2; --panel: #ffffff; --line: #e1e6df; --text: #1d2a22; --muted: #66756b;
+    --bad: #c0392b; --ok: #2e8b57;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body { font-family: FFRegular, system-ui, sans-serif; background: var(--bg); color: var(--text); font-size: 14px; }
+  body.loading main { visibility: hidden; }
+  body.busy { cursor: progress; }
+  body.busy .dl button { opacity: .5; pointer-events: none; }
+  button, input, textarea { font: inherit; color: inherit; }
+
+  header { background: var(--green); color: #fff; padding: 12px 20px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+  header h1 { font-family: FFSemiBold, sans-serif; font-weight: normal; font-size: 17px; margin: 0; letter-spacing: .2px; }
+  header h1 span { color: var(--orange); }
+  header .spacer { flex: 1; }
+  header .ghost { background: transparent; border: 1px solid rgba(255,255,255,.3); color: #fff; padding: 6px 12px; border-radius: 8px; cursor: pointer; font-size: 13px; }
+  header .ghost:hover { background: rgba(255,255,255,.1); }
+
+  main { display: grid; grid-template-columns: 290px minmax(0,1fr) 380px; gap: 16px; padding: 16px; height: calc(100% - 56px); }
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; display: flex; flex-direction: column; min-height: 0; }
+  .panel h2 { font-family: FFSemiBold, sans-serif; font-weight: normal; font-size: 13px; text-transform: uppercase; letter-spacing: .6px; color: var(--muted); margin: 0; }
+  .phead { padding: 12px 14px; border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 8px; }
+  .phead .grow { flex: 1; }
+  .phead small { color: var(--muted); font-size: 12px; }
+
+  #list { list-style: none; margin: 0; padding: 6px; overflow: auto; flex: 1; }
+  .item { display: flex; align-items: center; gap: 8px; padding: 4px 6px; border-radius: 8px; }
+  .item:hover { background: #f4f7f3; }
+  .item.active { background: #e6f2ea; box-shadow: inset 3px 0 0 var(--green-2); }
+  .item .dot { width: 12px; height: 12px; border-radius: 50%; flex: none; }
+  .item .pick { flex: 1; min-width: 0; text-align: left; background: none; border: 0; padding: 6px 0; cursor: pointer; display: flex; gap: 6px; align-items: baseline; }
+  .item .nm { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .item .wt { color: var(--muted); font-size: 12px; flex: none; }
+  .item .copies { color: var(--muted); font-size: 12px; display: flex; align-items: center; }
+  .item .copies input { width: 38px; border: 1px solid var(--line); border-radius: 6px; padding: 2px 4px; text-align: center; margin-left: 2px; }
+  input[type=checkbox] { accent-color: var(--green-2); width: 16px; height: 16px; }
+  .listtools { display: flex; gap: 6px; padding: 10px; border-top: 1px solid var(--line); flex-wrap: wrap; }
+
+  .btn { border: 1px solid var(--line); background: #fff; border-radius: 8px; padding: 7px 11px; cursor: pointer; font-size: 13px; }
+  .btn:hover { border-color: #c4cec1; background: #f8faf7; }
+  .btn.icon { padding: 7px 9px; }
+  .btn.primary { background: var(--green); color: #fff; border-color: var(--green); font-family: FFSemiBold, sans-serif; }
+  .btn.primary:hover { background: var(--green-2); }
+  .btn.danger:hover { color: var(--bad); border-color: #e7b9b3; }
+
+  .center { align-items: center; justify-content: flex-start; overflow: auto; padding: 24px 16px; gap: 20px; }
+  #preview { width: min(100%, 440px); aspect-ratio: 226.772 / 255.118; box-shadow: 0 10px 30px rgba(5,69,35,.25); border-radius: 4px; overflow: hidden; flex: none; }
+  #preview svg { width: 100%; height: 100%; display: block; }
+  .size { color: var(--muted); font-size: 12px; margin-top: -8px; }
+
+  .dl { width: min(100%, 440px); display: grid; gap: 10px; }
+  .dl .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .dl .row .btn { flex: 1; }
+  .dl .card { border: 1px solid var(--line); border-radius: 10px; padding: 12px; display: grid; gap: 8px; }
+  .dl .card p { margin: 0; color: var(--muted); font-size: 12.5px; line-height: 1.45; }
+  .dl .card strong { font-family: FFSemiBold, sans-serif; font-weight: normal; color: var(--text); }
+
+  form { padding: 14px; overflow: auto; display: grid; gap: 14px; align-content: start; }
+  .f label, .f .lbl { display: block; font-size: 12px; color: var(--muted); margin-bottom: 5px; }
+  .f input[type=text], .f textarea { width: 100%; border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; background: #fff; }
+  .f input:focus, .f textarea:focus { outline: 2px solid #9fd3ae; border-color: var(--mint); }
+  .f textarea { min-height: 84px; resize: vertical; line-height: 1.4; }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .colors { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .swatch { width: 28px; height: 28px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 0 0 1px var(--line); cursor: pointer; padding: 0; }
+  .swatch.on { box-shadow: 0 0 0 2px var(--text); }
+  #f-color { width: 34px; height: 30px; border: 1px solid var(--line); border-radius: 8px; padding: 2px; background: #fff; cursor: pointer; }
+  #f-colorhex { width: 92px !important; font-family: ui-monospace, monospace; font-size: 13px; }
+  .date { display: flex; align-items: center; gap: 6px; }
+  .date input { width: 56px !important; text-align: center; }
+  .hint { font-size: 12px; margin-top: 5px; color: var(--muted); }
+  .hint.ok { color: var(--ok); } .hint.bad { color: var(--bad); } .hint.warn { color: #a5620b; }
+  .lblrow { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+  .kind { font-size: 11px; padding: 2px 8px; border-radius: 99px; white-space: nowrap; }
+  .kind-ok { background: #e3f3e8; color: #1f6b3d; }
+  .kind-warn { background: #fdf0dc; color: #8a520a; }
+  .kind-muted { background: #eef0ee; color: var(--muted); }
+  .bcbtns { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 8px; }
+  #f-barcode[readonly] { background: #f4f6f3; color: var(--muted); }
+  .item .warn { flex: none; width: 16px; height: 16px; border-radius: 50%; background: var(--bad); color: #fff; font-size: 11px; line-height: 16px; text-align: center; font-family: FFSemiBold, sans-serif; align-self: center; }
+  .link { background: none; border: 0; padding: 0; color: var(--green-2); text-decoration: underline; cursor: pointer; font-size: 12px; }
+  .sep { border: 0; border-top: 1px solid var(--line); margin: 2px 0; }
+  .sub { font-family: FFSemiBold, sans-serif; font-size: 12px; text-transform: uppercase; letter-spacing: .6px; color: var(--muted); }
+  .check { display: flex; gap: 8px; align-items: center; font-size: 13px; }
+
+  #render { position: fixed; left: -9999px; top: 0; width: 227px; height: 256px; }
+  #toast { position: fixed; bottom: 20px; left: 50%; transform: translate(-50%, 20px); background: var(--text); color: #fff; padding: 10px 16px; border-radius: 10px; font-size: 13px; opacity: 0; transition: .2s; pointer-events: none; max-width: calc(100% - 32px); }
+  #toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+  @media (max-width: 1100px) {
+    main { grid-template-columns: 260px minmax(0,1fr); height: auto; }
+    .formpanel { grid-column: 1 / -1; }
+  }
+  @media (max-width: 720px) {
+    main { grid-template-columns: 1fr; padding: 12px; }
+    #list { max-height: 300px; }
+  }
+</style>
+</head>
+<body class="loading">
+<header>
+  <h1>Feel <span>Foods</span> · Etiquetas</h1>
+  <div class="spacer"></div>
+  <button class="ghost" id="btnExport" title="Guarda todas las etiquetas en un archivo de respaldo">Exportar respaldo</button>
+  <button class="ghost" id="btnImport" title="Carga un archivo de respaldo">Importar</button>
+  <button class="ghost" id="btnReset" title="Vuelve a las etiquetas del PDF original">Restaurar originales</button>
+  <input type="file" id="importFile" accept="application/json,.json" hidden>
+</header>
+
+<main>
+  <section class="panel">
+    <div class="phead">
+      <input type="checkbox" id="allSel" title="Seleccionar todas">
+      <h2 class="grow">Etiquetas</h2>
+      <small id="selCount"></small>
+    </div>
+    <ul id="list"></ul>
+    <div class="listtools">
+      <button class="btn" id="btnAdd">+ Nueva</button>
+      <button class="btn" id="btnDup">Duplicar</button>
+      <button class="btn icon" id="btnUp" title="Subir">↑</button>
+      <button class="btn icon" id="btnDown" title="Bajar">↓</button>
+      <button class="btn danger" id="btnDel">Borrar</button>
+    </div>
+  </section>
+
+  <section class="panel center">
+    <div id="preview"></div>
+    <div class="size">80 × 90 mm</div>
+    <div class="dl">
+      <div class="card">
+        <p><strong>PDF 80 × 90 mm</strong> · una etiqueta por página, en vectores y al tamaño exacto. Es lo que conviene para la imprenta o una impresora de etiquetas.</p>
+        <div class="row">
+          <button class="btn" id="dlOne">Descargar esta</button>
+          <button class="btn primary" id="dlSel">Descargar seleccionadas</button>
+        </div>
+      </div>
+      <div class="card">
+        <p><strong>Hoja A4</strong> · 6 etiquetas por hoja con marcas de corte, para imprimir en casa. Imprimí al 100% (sin "ajustar a la página"). Las copias se cambian con el número al lado de cada etiqueta. <span id="a4Info"></span></p>
+        <div class="row">
+          <label class="check"><input type="checkbox" id="s-marks"> Marcas de corte</label>
+          <button class="btn primary" id="dlA4">Descargar hoja A4</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel formpanel">
+    <div class="phead"><h2>Editar etiqueta</h2></div>
+    <form onsubmit="return false" autocomplete="off">
+      <div class="f"><label for="f-name">Nombre del producto</label><input type="text" id="f-name"></div>
+      <div class="f">
+        <span class="lbl">Color de la etiqueta del nombre</span>
+        <div class="colors"><div class="colors" id="swatches"></div><input type="color" id="f-color" title="Otro color"><input type="text" id="f-colorhex" maxlength="7"></div>
+      </div>
+      <div class="f">
+        <label for="f-ingredients">Ingredientes</label>
+        <textarea id="f-ingredients"></textarea>
+        <div class="hint">Con Enter elegís dónde se corta la línea. Si el texto es muy largo, se achica solo.</div>
+      </div>
+      <div class="two">
+        <div class="f"><label for="f-weight">Peso</label><input type="text" id="f-weight"></div>
+        <div class="f">
+          <span class="lbl">Vencimiento (mes / año)</span>
+          <div class="date"><input type="text" id="f-month" maxlength="2" aria-label="Mes"> / <input type="text" id="f-year" maxlength="2" aria-label="Año"></div>
+        </div>
+      </div>
+      <div class="hint" style="margin-top:-8px">Dejalo vacío si lo completás a mano. <button class="link" id="applyDate" type="button">Aplicar este vencimiento a todas</button></div>
+      <div class="f">
+        <div class="lblrow"><label for="f-barcode">Código de barras (EAN-13)</label><span id="bc-kind"></span></div>
+        <input type="text" id="f-barcode" inputmode="numeric" maxlength="13">
+        <div class="hint" id="bc-msg"></div>
+        <div class="bcbtns">
+          <button class="btn" type="button" id="bc-gen">Generar código</button>
+          <button class="btn" type="button" id="bc-verify" title="Copia el código y abre el buscador oficial de GS1">Verificar en GS1</button>
+          <button class="link" type="button" id="bc-unlock">Desbloquear código</button>
+        </div>
+      </div>
+      <hr class="sep">
+      <div class="sub">Común a todas las etiquetas</div>
+      <div class="two">
+        <div class="f"><label for="s-phone">WhatsApp</label><input type="text" id="s-phone"></div>
+        <div class="f"><label for="s-instagram">Instagram</label><input type="text" id="s-instagram"></div>
+      </div>
+      <div class="f">
+        <label for="s-gs1">Prefijo de empresa GS1 Argentina</label>
+        <input type="text" id="s-gs1" inputmode="numeric" maxlength="11" placeholder="Ej.: 7791234 (cuando lo tengas)">
+        <div class="hint" id="gs1-msg"></div>
+      </div>
+    </form>
+  </section>
+</main>
+
+<div id="render" aria-hidden="true"></div>
+<div id="toast" role="status"></div>
+
+<script src="lib/jspdf.umd.min.js"></script>
+<script src="lib/svg2pdf.umd.min.js"></script>
+<script src="assets.js"></script>
+<script src="label.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
